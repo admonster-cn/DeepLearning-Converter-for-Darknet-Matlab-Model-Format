@@ -22,8 +22,8 @@ tiny.cfg<br>
 从https://pjreddie.com/darknet/imagenet/ 找到Pre_Trained Models的下载链接并点击下载，比如使用darknet19
   
 ```
-cfg_file = 'G:\download\darknet-master\cfg\darknet19.cfg';
-weight_file = 'G:\download\darknet-master\cfg\darknet19.weights';
+cfg_file = 'darknet19.cfg';
+weight_file = 'darknet19.weights';
 [mynet,hyperParams,numsNetParams,FLOPs] = importDarknetNetwork(cfg_file,weight_file);
 ```
 ![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/importDarknetNetwork.png)
@@ -87,9 +87,9 @@ exportDarkNetNetwork(mynet,hyperParams,cfgfile,weightfile)
 ```
 
 **4、示例四：导入部分层示例**<br>
-比如使用yolov3-tiny.cfg
+比如使用[yolov3-tiny.cfg](https://github.com/pjreddie/darknet/blob/master/cfg/yolov3-tiny.cfg)
 ```
-cfgfile = 'G:\download\darknet-master\cfg\yolov3-tiny.cfg';
+cfgfile = 'yolov3-tiny.cfg';
 cutoffModule = 17;
 [lgraphLayer,hyperParams,numsNetParams,FLOPs,moduleTypeList,moduleInfoList,layerToModuleIndex] = importDarkNetLayers(cfgfile,cutoffModule);
 analyzeNetwork(lgraphLayer)
