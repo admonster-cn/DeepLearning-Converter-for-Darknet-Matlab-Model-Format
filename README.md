@@ -2,8 +2,8 @@
 The importer can import all the seriesNetworks in the darknet and some simple DAGnetworks. The exporter can export all the seriesNetworks and some of the backbone networks. In addition to importing the deep neural network, the importer can obtain the feature map size of the network, the number of parameters, and the computational power FLOPs. For yolov2, yolov3 can also import a number of previous modules for later access to the yolo layer. This program requires Matlab2019a version and above, no other dependencies.
 
 ***
-<p>
-目前测试能导入和导出官网[darknet](https://github.com/pjreddie/darknet/tree/master/cfg)以下网络,其他resnet* ，yolo*可导入部分网络层<br>
+
+目前测试能导入和导出官网[darknet](https://github.com/pjreddie/darknet)以下网络，其他resnet*,yolo*可导入部分网络层<br>
 alexnet.cfg<br>
 cifar.cfg<br>
  darknet.cfg <br>
@@ -59,8 +59,8 @@ cutoffModule = 15;
 [lgraphWeight,hyperParams,numsNetParams,FLOPs] = importDarknetWeights(cfg_file,weight_file,cutoffModule);
 analyzeNetwork(lgraphWeight)
 ```
+![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/importDarknetWeights.png)
 ![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/lgraphWeight.png)
-
 **3、示例三：导出mynet为cfg,weights 文件**<br>
 ```
 hyperParams = [];
@@ -95,3 +95,4 @@ cutoffModule = 17;
 analyzeNetwork(lgraphLayer)
 ```
 ![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/importDarknetLayers.png)
+![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/lgraphLayer.png)
