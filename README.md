@@ -1,0 +1,2 @@
+# DeepLearning-Converter-for-Darknet-Model-Format
+The importer can import all the seriesNetworks in the darknet and some simple DAGnetworks. The exporter can export all the seriesNetworks and some of the backbone networks. In addition to importing the deep neural network, the importer can obtain the feature map size of the network, the number of parameters, and the computational power FLOPs. For yolov2, yolov3 can also import a number of previous modules for later access to the yolo layer. This program requires Matlab2019a version and above, no other dependencies.
