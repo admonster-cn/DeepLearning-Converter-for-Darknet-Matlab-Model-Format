@@ -119,7 +119,7 @@ lgraph = removeLayers(lgraph,revLayers)
 deepNetworkDesigner()% 手动连接后导出
 ```
 最终onnx导入到命名为m2.mat模型文件里,[百度网盘](https://pan.baidu.com/s/1i0NBPd9CzhyfC0m7t7Ri6w), 提取码: axnv ，用一图片验证其识别效果如下：<br>
-另外再次导入导出为cfg,weights的模型文件做验证，验证OK！
+另外再次导入导出（isLoadOnnx由true改为false）为cfg,weights的模型文件做验证，验证OK！
 ```matlab
 classes = getClasses('synset_words.txt');
 isLoadOnnx = true;
@@ -146,7 +146,7 @@ Ypredict = predict(netCNN,image);
 [max_val,ind] = max(Ypredict);
 predictLabel = classes(ind);
 predictScore = max_val;
-str = sprintf('predictLabel:%s\n predictScore:%.5f\n',string(predictLabel),string(predictScore));
+str = sprintf('predictLabel:%s, predictScore:%.5f\n',string(predictLabel),string(predictScore));
 fprintf('%s',str); % 预测分数结果0.7757
 
 %% 导出模型
@@ -171,4 +171,5 @@ if isempty(hyperParams)
 end
 exportDarkNetNetwork(mynet,hyperParams,mobilenetv2_cfg,mobilenetv2_weight)
 ```
-
+预测结果：<br>
+predictLabel:n07720875 bell pepper, predictScore:0.77573
