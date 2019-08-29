@@ -11,7 +11,7 @@ function [lgraph,hyperParams,numsNetParams,FLOPs,moduleTypeList,moduleInfoList,l
 %      layerToModuleIndex,
 %      n*1的向量数组，lgraph中Layers归为module的索引，从1开始，n为Layers的长度大小
 % 注意：1、适合2019a版本及以上
-%      2、relu6用relu激活函数代替，因为clip relu不知道darknet是否实现;leakrelu阈值目前取的0.1
+%      2、leaky阈值目前取的0.1
 %      3、如果某个module中有bn层，则conv的bias为0，因为darknet是这种存储形式
 %      4、当读入到yolo层，退出导入，暂时不支持yolo及后面的层，因为yolov3官方还不支持
 %      5、shortcut和route只支持输入节点数不高于2个，且其中一个分支线路没有layer
@@ -22,11 +22,12 @@ function [lgraph,hyperParams,numsNetParams,FLOPs,moduleTypeList,moduleInfoList,l
 %       3、https://github.com/ultralytics/yolov3/blob/master/models.py
 % cuixingxing150@gmail.com
 % 2019.8.19
+% 修改于2019.8.29，加入relu6支持
 %
 minArgs=1;
 maxArgs=2;
 narginchk(minArgs,maxArgs)
-fprintf('Received 1 required and %d optional inputs\n', length(varargin));
+% fprintf('Received 1 required and %d optional inputs\n', length(varargin));
 
 %% init
 numsNetParams = 0;FLOPs = 0;
@@ -141,6 +142,8 @@ for i = 1:nums_Module
             % 添加relu层
             if strcmp(currentModuleInfo.activation,'relu')
                 relu_layer = reluLayer('Name',['relu_',num2str(i)]);
+            elseif strcmp(currentModuleInfo.activation,'relu6')
+                relu_layer = clippedReluLayer(6,'Name',['clipRelu_',num2str(i)]);
             elseif strcmp(currentModuleInfo.activation,'leaky')
                 relu_layer = leakyReluLayer(0.1,'Name',['leaky_',num2str(i)]);
             end
@@ -169,6 +172,8 @@ for i = 1:nums_Module
             % 添加relu层
             if strcmp(currentModuleInfo.activation,'relu')
                 relu_layer = reluLayer('Name',['relu_',num2str(i)]);
+            elseif strcmp(currentModuleInfo.activation,'relu6')
+                relu_layer = clippedReluLayer(6,'Name',['clipRelu_',num2str(i)]);
             elseif strcmp(currentModuleInfo.activation,'leaky')
                 relu_layer = leakyReluLayer('Name',['leaky_',num2str(i)]);
             end
@@ -200,6 +205,8 @@ for i = 1:nums_Module
             if isfield(currentModuleInfo,'activation')
                 if strcmp(currentModuleInfo.activation,'relu')
                     relu_layer = reluLayer('Name',['relu_',num2str(i)]);
+                elseif strcmp(currentModuleInfo.activation,'relu6')
+                    relu_layer = clippedReluLayer(6,'Name',['clipRelu_',num2str(i)]);
                 elseif strcmp(currentModuleInfo.activation,'leaky')
                     relu_layer = leakyReluLayer('Name',['leaky_',num2str(i)]);
                 end
@@ -291,6 +298,8 @@ for i = 1:nums_Module
             % 添加relu层
             if strcmp(currentModuleInfo.activation,'relu')
                 relu_layer = reluLayer('Name',['relu_',num2str(i)]);
+            elseif strcmp(currentModuleInfo.activation,'relu6')
+                relu_layer = clippedReluLayer(6,'Name',['clipRelu_',num2str(i)]);
             elseif strcmp(currentModuleInfo.activation,'leaky')
                 relu_layer = leakyReluLayer(0.1,'Name',['leaky_',num2str(i)]);
             end

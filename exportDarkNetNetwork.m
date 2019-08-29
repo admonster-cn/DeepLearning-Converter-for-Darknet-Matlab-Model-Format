@@ -12,11 +12,12 @@ function exportDarkNetNetwork(net,hyperParams,cfgfileName,weightfileName,varargi
 %      3、一个module为不是以BN,Activation开始的层
 % cuixingxing150@gmail.com
 % 2019.8.22
+% 修改于2019.8.29，支持导出relu6
 %
 minArgs=4;
 maxArgs=5;
 narginchk(minArgs,maxArgs)
-fprintf('Received 4 required and %d optional inputs\n', length(varargin));
+
 %% init
 moduleTypeList = []; % cell array,每个cell存储字符向量的模块类型，如'[convolutional]'
 moduleInfoList = []; % cell array,每个cell存储结构图的模块信息
@@ -67,6 +68,14 @@ for i = 1:numsLayers
         module_idx = module_idx-1;
         moduleInfoList{end}.activation = 'leaky';
         is_new_module = false;
+    elseif strcmpi(currentLayerType,'nnet.onnx.layer.ClipLayer')%当作阈值为6导出
+        module_idx = module_idx-1;
+        moduleInfoList{end}.activation = 'relu6'; %实际上类似于matlab的clippedReluLayer,6
+        is_new_module = false;
+    elseif strcmpi(currentLayerType,'nnet.cnn.layer.ClippedReLULayer') %当作阈值为6导出
+        module_idx = module_idx-1;
+        moduleInfoList{end}.activation = 'relu6'; %实际上类似于matlab的clippedReluLayer,6
+        is_new_module = false;
     elseif strcmpi(currentLayerType,'nnet.cnn.layer.MaxPooling2DLayer')
         moduleTypeList = [moduleTypeList;{'[maxpool]'}];
         layer = net.Layers(i);
@@ -108,7 +117,7 @@ for i = 1:numsLayers
         source = net.Connections.Source(index_Dlogical);
         index_Slogical = contains(layerNames(1:end-1),source);
         st.from = layerToModuleIndex(index_Slogical)-1; % -1 darknet module number base 0
-        st.from = join(string(st.from),',');
+        st.from = num2str(min(st.from)); % 2019.8.29修改
     elseif strcmpi(currentLayerType,'nnet.cnn.layer.DepthConcatenationLayer')
         moduleTypeList = [moduleTypeList;{'[route]'}];
         st = struct('layers',[]);
@@ -167,8 +176,8 @@ fclose(fid_cfg);
 
 %% 3、保存weights权重
 fid_weight = fopen(weightfileName,'wb');
-fwrite(fid_weight,[0,1,0],'int32');% version
-fwrite(fid_weight,0,'int32'); % number images in train
+fwrite(fid_weight,[0,2,5],'int32');% version
+fwrite(fid_weight,0,'int64'); % number images in train
 nums_module = length(moduleTypeList);
 for module_index = 1:nums_module
     currentModuleType = moduleTypeList{module_index};% 字符向量

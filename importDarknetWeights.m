@@ -8,7 +8,7 @@ function [lgraph,hyperParams,numsNetParams,FLOPs] = importDarknetWeights(cfgfile
 %      numsReadParams,权重参数个数
 %      FLOPs， 模型计算力
 % 注意：1、适合2019a版本及以上
-%       2、relu6用relu激活函数代替，因为clip relu不知道darknet是否实现
+%       2、leaky阈值目前取的0.1
 %       3、如果某个module中有bn层，则conv的bias为0，因为darknet是这种存储形式
 %      4、当读入到yolo层，退出导入，暂时不支持yolo及后面的层，因为yolov3官方还不支持
 %      5、darknet weights保存顺序依次为BN层offset,scale,mean,variance,Conv层的bias,weights

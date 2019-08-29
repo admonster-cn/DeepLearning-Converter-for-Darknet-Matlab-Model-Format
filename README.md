@@ -98,3 +98,77 @@ analyzeNetwork(lgraphLayer)
 ```
 ![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/importDarknetLayers.png)
 ![RUNOOB 图标](https://github.com/cuixing158/DeepLearning-Converter-for-Darknet-Model-Format/blob/master/imagesResult/lgraphLayer.png)
+
+**5、示例五：导入导出第三方mobilenetV2模型**<br>
+比如第三方的[mobilenetv2模型](https://github.com/cuixing158/pytorch-mobilenet-v2)来自于pytorch版本的。<br>
+首先在pytorch模型转换onnx格式：<br>
+```python
+net = MobileNetV2(n_class = 1000)
+state_dict = torch.load(r'mobilenet_v2.pth.tar')
+net.load_state_dict(state_dict)
+torch.onnx.export(net, torch.randn(1,3,224,224), "mobilenetv2_pytorch.onnx", verbose=True)
+```
+然后把“mobilenetv2_pytorch.onnx”导入到matlab中，如果遇到有的层不支持，则用[importONNXLayers](https://www.mathworks.com/help/deeplearning/ref/importonnxlayers.html)在deepNetworkDesigner中微调网络连接结构即可。<br>
+```matlab
+onnxf = 'mobilenetv2_pytorch.onnx';
+lgraph = importONNXLayers(onnxf,'OutputLayerType','classification', ...
+    'ImportWeights',true);
+placeholderLayers = findPlaceholderLayers(lgraph);
+revLayers = string(vertcat(placeholderLayers.Name));
+lgraph = removeLayers(lgraph,revLayers)
+deepNetworkDesigner()% 手动连接后导出
+```
+最终onnx导入到命名为m2.mat模型文件里,[百度网盘](https://pan.baidu.com/s/1i0NBPd9CzhyfC0m7t7Ri6w), 提取码: axnv ，用一图片验证其识别效果如下：<br>
+另外再次导入导出为cfg,weights的模型文件做验证，验证OK！
+```matlab
+classes = getClasses('synset_words.txt');
+isLoadOnnx = true;
+mobilenetv2_cfg = 'm2_export.cfg';
+mobilenetv2_weight = 'm2_export.weights';
+if isLoadOnnx
+    load m2.mat
+else %再导入已保存(matlab导出)的模型
+    [netCNN,hyperParams,numsNetParams,FLOPs] = importDarknetNetwork(mobilenetv2_cfg,mobilenetv2_weight);
+end
+sz = netCNN.Layers(1).InputSize;
+
+%% 图像预处理
+image = imread('peppers.png');
+image = im2single(imresize(image,sz(1:2)));
+mean = [0.485, 0.456, 0.406];
+std = [0.229, 0.224, 0.225];
+image(:,:,1) = (image(:,:,1)-mean(1))/std(1);
+image(:,:,2) = (image(:,:,2)-mean(2))/std(2);
+image(:,:,3) = (image(:,:,3)-mean(3))/std(3);
+
+%% predict
+Ypredict = predict(netCNN,image);
+[max_val,ind] = max(Ypredict);
+predictLabel = classes(ind);
+predictScore = max_val;
+str = sprintf('predictLabel:%s\n predictScore:%.5f\n',string(predictLabel),string(predictScore));
+fprintf('%s',str); % 预测分数结果0.7757
+
+%% 导出模型
+mynet = netCNN;
+hyperParams = [];
+if isempty(hyperParams)
+    hyperParams = struct('batch',64,...
+        'subdivisiions',1,...
+        'height',mynet.Layers(1).InputSize(1),...
+        'width',mynet.Layers(1).InputSize(2),...
+        'channels',mynet.Layers(1).InputSize(3),...
+        'momentum',0.9,...
+        'max_crop',256,...
+        'learning_rate',0.01,...
+        'policy','poly',...
+        'power',4,...
+        'max_batches',600000,...
+        'angle',7,...
+        'saturation',0.75,...
+        'exposure',0.75,...
+        'aspect',0.75);
+end
+exportDarkNetNetwork(mynet,hyperParams,mobilenetv2_cfg,mobilenetv2_weight)
+```
+
