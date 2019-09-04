@@ -2,7 +2,7 @@ function [lgraph,hyperParams,numsNetParams,FLOPs] = importDarknetWeights(cfgfile
 % IMPORTDARKNETWEIGHTS 功能：指定导入部分module的darknet模型
 % 输入：cfgfile, 指定的cfg后缀的模型描述文件，目前只支持series network或者DAGnetwork
 %       weighfile, 指定的.weights后缀的二进制文件，目前只支持series network或者DAGnetwork
-%       cutoffModule,(可选项)1*1的正整数，指定导入darknet前cutoffModule个module，以1为base的索引，没有该输入则导入整个网络
+%       cutoffModule,(可选项)1*1的正整数，(可选项)1*1的正整数，指定导出darknet前cutoffModule个module。以cfg文件中第一个非[net]开始的module为0开始的计数，没有该项则导出整个网络
 % 输出：lgraph， matlab深度学习模型计算图，目前只支持series network或者DAGnetwork
 %      hyperParams,结构体，超参配置文件
 %      numsReadParams,权重参数个数
@@ -18,6 +18,7 @@ function [lgraph,hyperParams,numsNetParams,FLOPs] = importDarknetWeights(cfgfile
 %       3、https://github.com/ultralytics/yolov3/blob/master/models.py
 % cuixingxing150@gmail.com
 % 2019.8.19
+% 2019.9.4修改，由原来的darknet中[net]为0开始的索引改为以cfg文件中第一个非[net]开始的module为0开始的计数的索引
 %
 
 [lgraph,hyperParams,numsNetParams,FLOPs,...

@@ -1,7 +1,7 @@
 function [lgraph,hyperParams,numsNetParams,FLOPs,moduleTypeList,moduleInfoList,layerToModuleIndex] = importDarkNetLayers(cfgfile,varargin)
 % importDarkNetLayers 功能：把darknet的cfgfile导出为matlab的lgraph
-% 输入：cfgfile, (必选项)字符向量，指定的cfg后缀的模型描述文件
-%      cutoffModule,(可选项)1*1的正整数，指定导入darknet前cutoffModule个module，以1为base的索引，没有该输入则导入整个网络
+% 输入：cfgfile, (必选项)字符向量，指定的cfg后缀的模型描述文件名字
+%      cutoffModule,(可选项)1*1的正整数，指定导入darknet前cutoffModule个module。以cfg文件中第一个非[net]开始的module为0开始的计数，没有该项输入则导出整个网络
 % 输出：lgraph， matlab深度学习模型图，目前只支持series network或者DAGnetwork
 %      hyperParams,结构体，超参配置文件
 %      numsNetParams,权重参数个数
@@ -22,7 +22,8 @@ function [lgraph,hyperParams,numsNetParams,FLOPs,moduleTypeList,moduleInfoList,l
 %       3、https://github.com/ultralytics/yolov3/blob/master/models.py
 % cuixingxing150@gmail.com
 % 2019.8.19
-% 修改于2019.8.29，加入relu6支持
+% 2019.8.29修改，加入relu6支持
+% 2019.9.4修改，由原来的darknet中[net]为0开始的索引改为以cfg文件中第一个非[net]开始的module为0开始的计数的索引
 %
 minArgs=1;
 maxArgs=2;
@@ -67,10 +68,11 @@ end
 
 %% cutoff
 if ~isempty(varargin)
-    nums_Module = varargin{1};
-    moduleTypeList(nums_Module+1:end) = [];
-    moduleInfoList(nums_Module+1:end) = [];
+    cutoffModule = varargin{1};
+    moduleTypeList(cutoffModule+2:end) = [];
+    moduleInfoList(cutoffModule+2:end) = [];
 end
+nums_Module = length(moduleTypeList);
 
 %% 构建网络结构图
 lgraph = layerGraph();hyperParams = struct();
@@ -288,7 +290,7 @@ for i = 1:nums_Module
             lgraph = addLayers(lgraph,moduleLayers);
             lgraph = connectLayers(lgraph,...
                 lastModuleNames{i-1},moduleLayers(1).Name);
-        case '[connected]' % 与普通卷积最大区别是输入大小是否固定，保证全连接层参数可乘;其后暂时不考虑接BN
+        case '[connected]' % 与普通卷积最大区别是输入大小是否固定，保证全连接层参数可乘;其后没有BN
             moduleLayers = [];connected_layer = [];relu_layer = [];
             output = str2double(currentModuleInfo.output);
             connected_layer = fullyConnectedLayer(output,'Name',['fullyCon_',num2str(i)]);
@@ -335,19 +337,19 @@ for i = 1:nums_Module
     layerToModuleIndex = [layerToModuleIndex;i*ones(length(moduleLayers),1)];
 end
 
-    function module_idx = getModuleIdx(current_ind,cfg_value)
+    function matlab_module_idx = getModuleIdx(current_matlab_ind,cfg_value)
         % route,或者shortcut层转换为以1为起始索引的标量值
-        % 输入：current_ind，读入到当前层module的索引标量([net]以1为起始值),darknet是以[net]为0起始值
-        %      cfg_value，shortcut层的from值或者route的layers的某一个值
+        % 输入：current_matlab_ind，1*1的正整数,读入到当前层module的索引标量(current_matlab_ind中是以[net]以1为起始值),darknet是以第一个非[net]开始的module为0开始的计数的索引
+        %      cfg_value，1*1的整数，shortcut层的from值或者route的layers的某一个值
         % 输出：module_idx，连接到上一层module的索引值（正整数,以[net]为起始索引1）
         %
         % cuixingxing150@gmail.com
         % 2019.8.19
-        %
+        % 2019.9.4修改索引
         if cfg_value<0
-            module_idx = current_ind+cfg_value;
+            matlab_module_idx = current_matlab_ind+cfg_value;
         else
-            module_idx = 1+cfg_value;
+            matlab_module_idx = 2+cfg_value;
         end
     end % end of getModuleIdx
 
