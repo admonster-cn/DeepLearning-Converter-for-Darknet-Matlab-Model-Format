@@ -174,5 +174,3 @@ exportDarkNetNetwork(mynet,hyperParams,mobilenetv2_cfg,mobilenetv2_weight)
 ```
 预测结果：<br>
 predictLabel:n07720875 bell pepper, predictScore:0.77573
-
-111
