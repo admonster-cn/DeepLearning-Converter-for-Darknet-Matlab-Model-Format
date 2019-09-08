@@ -191,18 +191,20 @@ for i = 1:nums_Module
             if length(connectID)>2
                 error('unsupport more than 2 inputs');
             end
-            if length(connectID)==1
-                module_idx1 = i-1;
+            if length(connectID)==1 % 只有一个连接的时候，另一个不是默认上一层，与shortcut层单个值不同,此时为empty Layer
                 temp = str2double(connectID);
-                module_idx2 = getModuleIdx(i,temp);
-            else
+                module_idx = getModuleIdx(i,temp);
+                depth_layer = empty2dLayer(['empty_',num2str(i)]);
+                moduleInfoList{i}.channels = moduleInfoList{module_idx}.channels;
+                moduleInfoList{i}.mapSize = moduleInfoList{module_idx}.mapSize;
+            else % 此时为depthConcatenation Layer
                 temp1 = str2double(connectID(1));temp2 = str2double(connectID(2));
                 module_idx1 = getModuleIdx(i,temp1);
                 module_idx2 = getModuleIdx(i,temp2);
+                depth_layer = depthConcatenationLayer(2,'Name',['concat_',num2str(i)]);
+                moduleInfoList{i}.channels = moduleInfoList{module_idx1}.channels+moduleInfoList{module_idx2}.channels;
+                moduleInfoList{i}.mapSize = moduleInfoList{module_idx1}.mapSize;
             end
-            depth_layer = depthConcatenationLayer(2,'Name',['concat_',num2str(i)]);
-            moduleInfoList{i}.channels = moduleInfoList{module_idx1}.channels+moduleInfoList{module_idx2}.channels;
-            moduleInfoList{i}.mapSize = moduleInfoList{i-1}.mapSize;
             % 添加relu层
             if isfield(currentModuleInfo,'activation')
                 if strcmp(currentModuleInfo.activation,'relu')
@@ -213,12 +215,18 @@ for i = 1:nums_Module
                     relu_layer = leakyReluLayer('Name',['leaky_',num2str(i)]);
                 end
             end
+            
             moduleLayers = [depth_layer;relu_layer];
             lgraph = addLayers(lgraph,moduleLayers);
-            lgraph = connectLayers(lgraph,...
-                lastModuleNames{module_idx1},[moduleLayers(1).Name,'/in1']);
-            lgraph = connectLayers(lgraph,...
-                lastModuleNames{module_idx2},[moduleLayers(1).Name,'/in2']);
+            if length(connectID) == 1
+                lgraph = connectLayers(lgraph,...
+                    lastModuleNames{module_idx},moduleLayers(1).Name);
+            else
+                lgraph = connectLayers(lgraph,...
+                    lastModuleNames{module_idx1},[moduleLayers(1).Name,'/in1']);
+                lgraph = connectLayers(lgraph,...
+                    lastModuleNames{module_idx2},[moduleLayers(1).Name,'/in2']);
+            end
         case '[avgpool]'
             moduleLayers = [];avg_layer = [];
             poolsize = moduleInfoList{i-1}.mapSize;
