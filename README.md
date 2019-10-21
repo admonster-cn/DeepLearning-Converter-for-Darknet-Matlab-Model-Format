@@ -8,15 +8,15 @@ This repositories requires Matlab2019a version and above, no other dependencies.
 目前测试能导入和导出官网[darknet](https://github.com/pjreddie/darknet)以下网络，其他resnet*,yolo*可导入部分网络层<br>
 alexnet.cfg<br>
 cifar.cfg<br>
- darknet.cfg <br>
+darknet.cfg <br>
 darknet19.cfg<br>
 darknet19_448.cfg<br>
 darknet53.cfg <br>
 darknet9000.cfg<br>
- densenet201.cfg <br>
+densenet201.cfg <br>
 extraction.cfg<br>
- extraction.conv.cfg<br>
- extraction22k.cfg tiny.cfg<br>
+extraction.conv.cfg<br>
+extraction22k.cfg tiny.cfg<br>
 tiny.cfg<br>
 能够计算导入网络的特征图大小，FLOPs，参数个数。<br>
  
